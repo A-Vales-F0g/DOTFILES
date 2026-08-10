@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notes App</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      background: #1e293b;
+      color: #e2e8f0;
+      font-size: 1rem;
+    }
+
+    button {
+      padding: 0.75rem 1.25rem;
+      border: none;
+      border-radius: 0.5rem;
+      background: #3b82f6;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #2563eb;
+    }
+
+    ul {
+      list-style: none;
+    }
+
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
+      background: #1e293b;
+      border-radius: 0.5rem;
+    }
+
+    .delete {
+      background: #ef4444;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.875rem;
+    }
+
+    .delete:hover {
+      background: #dc2626;
+    }
+
+    .empty {
+      text-align: center;
+      color: #94a3b8;
+      padding: 2rem 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Notes</h1>
+    <div class="input-group">
+      <input id="noteInput" type="text" placeholder="Type a new note..." autocomplete="off">
+      <button id="addBtn">Add</button>
+    </div>
+    <ul id="noteList"></ul>
+  </div>
+
+  <script>
+    const noteInput = document.getElementById('noteInput');
+    const addBtn = document.getElementById('addBtn');
+    const noteList = document.getElementById('noteList');
+
+    const storageKey = 'notes-app-data';
+
+    let notes = JSON.parse(localStorage.getItem(storageKey) || '[]');
+
+    function save() {
+      localStorage.setItem(storageKey, JSON.stringify(notes));
+    }
+
+    function render() {
+      noteList.innerHTML = '';
+
+      if (notes.length === 0) {
+        noteList.innerHTML = '<li class="empty">No notes yet.</li>';
+        return;
+      }
+
+      notes.forEach((note, index) => {
+        const li = document.createElement('li');
+        const span = document.createElement('span');
+        span.textContent = note;
+
+        const delBtn = document.createElement('button');
+        delBtn.textContent = 'Delete';
+        delBtn.className = 'delete';
+        delBtn.addEventListener('click', () => {
+          notes.splice(index, 1);
+          save();
+          render();
+        });
+
+        li.appendChild(span);
+        li.appendChild(delBtn);
+        noteList.appendChild(li);
+      });
+    }
+
+    function addNote() {
+      const text = noteInput.value.trim();
+      if (text) {
+        notes.push(text);
+        noteInput.value = '';
+        save();
+        render();
+      }
+    }
+
+    addBtn.addEventListener('click', addNote);
+    noteInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') addNote();
+    });
+
+    render();
+  </script>
+</body>
+</html>
