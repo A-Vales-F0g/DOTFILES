@@ -73,6 +73,17 @@
       border-radius: 0.5rem;
     }
 
+    .note-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .timestamp {
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
     .delete {
       background: #ef4444;
       padding: 0.4rem 0.75rem;
@@ -108,6 +119,7 @@
     const storageKey = 'notes-app-data';
 
     let notes = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    notes = notes.map(n => typeof n === 'string' ? { text: n, createdAt: new Date().toISOString() } : n);
 
     function save() {
       localStorage.setItem(storageKey, JSON.stringify(notes));
@@ -123,8 +135,19 @@
 
       notes.forEach((note, index) => {
         const li = document.createElement('li');
+
+        const content = document.createElement('div');
+        content.className = 'note-content';
+
         const span = document.createElement('span');
-        span.textContent = note;
+        span.textContent = note.text;
+
+        const time = document.createElement('time');
+        time.className = 'timestamp';
+        time.textContent = new Date(note.createdAt).toLocaleString();
+
+        content.appendChild(span);
+        content.appendChild(time);
 
         const delBtn = document.createElement('button');
         delBtn.textContent = 'Delete';
@@ -135,7 +158,7 @@
           render();
         });
 
-        li.appendChild(span);
+        li.appendChild(content);
         li.appendChild(delBtn);
         noteList.appendChild(li);
       });
@@ -144,7 +167,7 @@
     function addNote() {
       const text = noteInput.value.trim();
       if (text) {
-        notes.push(text);
+        notes.push({ text, createdAt: new Date().toISOString() });
         noteInput.value = '';
         save();
         render();
