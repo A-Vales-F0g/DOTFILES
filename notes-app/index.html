@@ -32,6 +32,12 @@
     .input-group {
       display: flex;
       gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
       margin-bottom: 1.5rem;
     }
 
@@ -59,6 +65,14 @@
       background: #2563eb;
     }
 
+    .clear {
+      background: #f59e0b;
+    }
+
+    .clear:hover {
+      background: #d97706;
+    }
+
     ul {
       list-style: none;
     }
@@ -71,6 +85,17 @@
       margin-bottom: 0.5rem;
       background: #1e293b;
       border-radius: 0.5rem;
+    }
+
+    .note-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .timestamp {
+      font-size: 0.75rem;
+      color: #94a3b8;
     }
 
     .delete {
@@ -97,17 +122,22 @@
       <input id="noteInput" type="text" placeholder="Type a new note..." autocomplete="off">
       <button id="addBtn">Add</button>
     </div>
+    <div class="actions">
+      <button id="clearBtn" class="clear">Clear all</button>
+    </div>
     <ul id="noteList"></ul>
   </div>
 
   <script>
     const noteInput = document.getElementById('noteInput');
     const addBtn = document.getElementById('addBtn');
+    const clearBtn = document.getElementById('clearBtn');
     const noteList = document.getElementById('noteList');
 
     const storageKey = 'notes-app-data';
 
     let notes = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    notes = notes.map(n => typeof n === 'string' ? { text: n, createdAt: new Date().toISOString() } : n);
 
     function save() {
       localStorage.setItem(storageKey, JSON.stringify(notes));
@@ -123,8 +153,19 @@
 
       notes.forEach((note, index) => {
         const li = document.createElement('li');
+
+        const content = document.createElement('div');
+        content.className = 'note-content';
+
         const span = document.createElement('span');
-        span.textContent = note;
+        span.textContent = note.text;
+
+        const time = document.createElement('time');
+        time.className = 'timestamp';
+        time.textContent = new Date(note.createdAt).toLocaleString();
+
+        content.appendChild(span);
+        content.appendChild(time);
 
         const delBtn = document.createElement('button');
         delBtn.textContent = 'Delete';
@@ -135,7 +176,7 @@
           render();
         });
 
-        li.appendChild(span);
+        li.appendChild(content);
         li.appendChild(delBtn);
         noteList.appendChild(li);
       });
@@ -144,7 +185,7 @@
     function addNote() {
       const text = noteInput.value.trim();
       if (text) {
-        notes.push(text);
+        notes.push({ text, createdAt: new Date().toISOString() });
         noteInput.value = '';
         save();
         render();
@@ -154,6 +195,14 @@
     addBtn.addEventListener('click', addNote);
     noteInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') addNote();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      if (notes.length > 0 && confirm('Are you sure you want to delete all notes?')) {
+        notes = [];
+        save();
+        render();
+      }
     });
 
     render();
